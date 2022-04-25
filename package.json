@@ -1,0 +1,25 @@
+{
+  "name": "agora",
+  "version": "1.0.0",
+  "description": "A starboarding Discord bot",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Lord-Valen/agora.git"
+  },
+  "author": "Lord Valen",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Lord-Valen/agora/issues"
+  },
+  "homepage": "https://github.com/Lord-Valen/agora#readme",
+  "devDependencies": {
+    "jest": "^28.0.0"
+  },
+  "dependencies": {
+    "discord.js": "^13.6.0"
+  }
+}
