@@ -16,10 +16,11 @@
     "url": "https://github.com/Lord-Valen/agora/issues"
   },
   "homepage": "https://github.com/Lord-Valen/agora#readme",
-  "devDependencies": {
-    "jest": "^28.0.0"
-  },
   "dependencies": {
     "discord.js": "^13.6.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^27.4.1",
+    "ts-jest": "^27.1.4"
   }
 }
