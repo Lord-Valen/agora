@@ -2,8 +2,9 @@
   "name": "agora",
   "version": "1.0.0",
   "description": "A starboarding Discord bot",
-  "main": "main.js",
+  "main": "dist/main.js",
   "scripts": {
+    "build": "tsc -p tsconfig.json",
     "test": "jest --coverage"
   },
   "repository": {
