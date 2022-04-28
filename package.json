@@ -5,7 +5,7 @@
   "main": "dist/main.js",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "jest --coverage"
+    "test": "jest --coverage --passWithNoTests"
   },
   "repository": {
     "type": "git",
