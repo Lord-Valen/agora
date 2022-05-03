@@ -8,7 +8,7 @@ const {
 const { client } = require("../main.js");
 
 const processEmbed = (message: typeof Message) => {
-  console.log("Processing embed");
+  console.log("Processing embed...");
   const embed = new MessageEmbed()
     .setAuthor(message.author.tag, message.author.displayAvatarURL())
     .setURL(message.url)
@@ -20,8 +20,9 @@ const processEmbed = (message: typeof Message) => {
   );
 
   if (starboard) {
-    console.log("Posting embed");
+    console.log("Posting embed...");
     starboard.send(embed);
+    console.log("Posted")
   }
 };
 
@@ -30,11 +31,13 @@ module.exports = {
   once: false,
   async execute(reaction: typeof MessageReaction, user: APIUser) {
     console.log("There was a reaction!");
-    if (reaction.message.emoji === "⭐") {
-      if (reaction.partial == true) {
+    if (reaction.emoji.name === "⭐") {
+      if (reaction.partial === true) {
+        console.log("Fetching message...")
         await reaction
           .fetch()
           .then((data: APIMessage) => {
+            console.log("Got it!")
             processEmbed(data);
           })
           .catch((err: string) =>
