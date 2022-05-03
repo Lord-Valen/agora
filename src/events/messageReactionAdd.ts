@@ -11,20 +11,26 @@ const processEmbed = (message: typeof Message) => {
   console.log("Processing embed...");
   const embed = new MessageEmbed()
     .setAuthor(message.author.tag, message.author.displayAvatarURL())
-    .setURL(message.url)
+    .addField("URL", message.url)
     .setDescription(message.content)
     .setFooter(message.createdTimestamp.toLocaleString());
 
+  return embed;
+};
+
+const addToStarboard = (message: typeof Message) => {
   const starboard = client.channels.cache.find(
     (channel: typeof Channel) => channel.name.toLowerCase() === "starboard"
   );
+
+  const embed = processEmbed(message);
 
   if (starboard) {
     console.log("Posting embed...");
     starboard.send(embed);
     console.log("Posted")
   }
-};
+}
 
 module.exports = {
   name: "messageReactionAdd",
@@ -38,13 +44,13 @@ module.exports = {
           .fetch()
           .then((data: APIMessage) => {
             console.log("Got it!")
-            processEmbed(data);
+            addToStarboard(data);
           })
           .catch((err: string) =>
-            console.log(`Something went wrong when fetching a message: ${err}`)
+            console.error(`Something went wrong when fetching a message: ${err}`)
           );
       } else {
-        processEmbed(reaction.message);
+        addToStarboard(reaction.message);
       }
     }
   },
