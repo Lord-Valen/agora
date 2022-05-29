@@ -1,15 +1,19 @@
 const fs = require("fs");
 const { token } = require("./config.json");
-const { Client, Intents } = require("discord.js");
+const { Client, Intents, Channel } = require("discord.js");
 
 // Start client
 const client = new Client({
-  intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS],
-  partials: ["MESSAGE", "CHANNEL", "REACTION"],
+  intents: [
+    Intents.FLAGS.GUILDS,
+    Intents.FLAGS.GUILD_MESSAGES,
+    Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
+  ],
+  partials: ["MESSAGE", "REACTION"],
 });
 
-// Login
-client.on("ready", () => {
+// Login && bootstrap
+client.on("ready", async () => {
   console.log("All set!");
 });
 client.login(token);
@@ -29,5 +33,3 @@ fs.readdir(__dirname + "/events", (err: string, files: string[]) => {
     }
   });
 });
-
-module.exports = client;
