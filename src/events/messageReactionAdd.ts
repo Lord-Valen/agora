@@ -52,9 +52,14 @@ module.exports = {
   name: "messageReactionAdd",
   once: false,
   async execute(reaction: typeof MessageReaction, user: APIUser) {
-    console.log("There was a reaction!");
+    console.log("There was a reaction...");
     if (reaction.emoji.name === "⭐") {
-      console.log("Fetching message...");
+      console.log("The reaction is for starboarding!");
+      if (reaction.message.channel.name.toLowerCase() === "starboard") {
+        console.log("The message is already on the board!");
+        return;
+      }
+      console.log("Fetching...");
       await reaction
         .fetch(false)
         .then((data: typeof MessageReaction) => {
