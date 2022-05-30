@@ -13,38 +13,55 @@ const processEmbed = (message: typeof Message) => {
       name: message.author.username,
       icon_url: message.author.displayAvatarURL(),
     },
-    description: `[See the message](${message.url})`,
+    description: `[See this message](${message.url})`,
     fields: [
       {
         name: `${message.author.username} said:`,
         value: message.content,
       },
     ],
-    timestamp: message.createdTimestamp.toLocaleString(),
+    timestamp: new Date(message.createdTimestamp),
+    footer: {
+      text: message.id,
+    },
   };
   console.log(`Got the embed!`);
 
   return embed;
 };
 
-const addToStarboard = (message: typeof Message) => {
-  console.log("Adding message to starboard...");
+const manageStarboard = async (reaction: typeof MessageReaction) => {
+  console.log("Managing starboard...");
+  const message = reaction.message;
   const client = message.client;
-  // client.channels.fetch("969686317539655781").then((channel: typeof Channel) => console.log("Fetched channel: " + channel.name)).catch(console.error);
   const starboard = client.channels.cache.find(
     (channel: typeof Channel) =>
       channel.name.toLowerCase() === "starboard" &&
       channel.type === "GUILD_TEXT"
   );
-  // const starboard = client.channels.fetch("969686317539655781");
 
-  const embed = processEmbed(message);
-
-  console.log(starboard);
   if (starboard) {
-    console.log("Posting embed to starboard...");
-    starboard.send({ embeds: [embed] });
-    console.log("Posted embed to starboard!");
+    const isOnStarboard = starboard.messages.cache.find((msg: typeof Message) =>
+      msg.embeds.length === 1
+        ? msg.embeds[0].footer.text.startsWith(reaction.message.id)
+          ? true
+          : false
+        : false
+    );
+
+    if (isOnStarboard) return;
+    let embed = processEmbed(message);
+    console.log("Posting new message to starboard...");
+    await starboard
+      .send({
+        embeds: [embed],
+      })
+      .then(console.log("Posted message to starboard!"))
+      .catch((err: any) =>
+        console.error(
+          `Something went wrong while posting a message to a board: ${err}`
+        )
+      );
   } else throw new Error("Starboard not found!");
 };
 
@@ -53,32 +70,26 @@ module.exports = {
   once: false,
   async execute(reaction: typeof MessageReaction, user: APIUser) {
     console.log("There was a reaction...");
+
     if (reaction.emoji.name === "⭐") {
       console.log("The reaction is for starboarding!");
-      if (reaction.message.channel.name.toLowerCase() === "starboard") {
-        console.log("The message is already on the board!");
-        return;
-      }
+
       console.log("Fetching...");
       await reaction
         .fetch(false)
-        .then((data: typeof MessageReaction) => {
-          console.log("Fetched reaction!");
-        })
+        .then(console.log("Fetched reaction!"))
         .catch((err: any) =>
           console.error(`Something went wrong when fetching a reaction: ${err}`)
         );
       await reaction.message
         .fetch(false)
-        .then((data: typeof Message) => {
-          console.log("Fetched message!");
-        })
+        .then(console.log("Fetched message!"))
         .catch((err: any) =>
           console.error(`Something went wrong when fetching a message: ${err}`)
         );
 
       try {
-        addToStarboard(reaction.message);
+        manageStarboard(reaction);
       } catch (err: any) {
         console.error(
           `Something went wrong when adding a message to a starboard: ${err}`
