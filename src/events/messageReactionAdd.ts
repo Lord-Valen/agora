@@ -13,21 +13,22 @@ const processEmbed = (message: typeof Message) => {
       name: message.author.username,
       icon_url: message.author.displayAvatarURL(),
     },
-    description: message.content,
+    description: `[See the message](${message.url})`,
     fields: [
       {
-        name: "URL",
-        value: message.url,
-        inline: true,
+        name: `${message.author.username} said:`,
+        value: message.content,
       },
     ],
     timestamp: message.createdTimestamp.toLocaleString(),
   };
+  console.log(`Got the embed!`);
 
   return embed;
 };
 
 const addToStarboard = (message: typeof Message) => {
+  console.log("Adding message to starboard...");
   const client = message.client;
   // client.channels.fetch("969686317539655781").then((channel: typeof Channel) => console.log("Fetched channel: " + channel.name)).catch(console.error);
   const starboard = client.channels.cache.find(
@@ -38,14 +39,13 @@ const addToStarboard = (message: typeof Message) => {
   // const starboard = client.channels.fetch("969686317539655781");
 
   const embed = processEmbed(message);
-  console.log(`Got the embed!`);
 
   console.log(starboard);
   if (starboard) {
-    console.log("Posting embed!");
+    console.log("Posting embed to starboard...");
     starboard.send({ embeds: [embed] });
-    console.log("Posted embed!");
-  } else console.error("Starboard not found");
+    console.log("Posted embed to starboard!");
+  } else throw new Error("Starboard not found!");
 };
 
 module.exports = {
@@ -54,21 +54,30 @@ module.exports = {
   async execute(reaction: typeof MessageReaction, user: APIUser) {
     console.log("There was a reaction!");
     if (reaction.emoji.name === "⭐") {
-      if (reaction.partial === true) {
-        console.log("Fetching message...");
-        await reaction
-          .fetch()
-          .then((data: typeof Message) => {
-            console.log("Got it!");
-            addToStarboard(data);
-          })
-          .catch((err: string) =>
-            console.error(
-              `Something went wrong when processing a reaction: ${err}`
-            )
-          );
-      } else {
+      console.log("Fetching message...");
+      await reaction
+        .fetch(false)
+        .then((data: typeof MessageReaction) => {
+          console.log("Fetched reaction!");
+        })
+        .catch((err: any) =>
+          console.error(`Something went wrong when fetching a reaction: ${err}`)
+        );
+      await reaction.message
+        .fetch(false)
+        .then((data: typeof Message) => {
+          console.log("Fetched message!");
+        })
+        .catch((err: any) =>
+          console.error(`Something went wrong when fetching a message: ${err}`)
+        );
+
+      try {
         addToStarboard(reaction.message);
+      } catch (err: any) {
+        console.error(
+          `Something went wrong when adding a message to a starboard: ${err}`
+        );
       }
     }
   },
