@@ -1,12 +1,6 @@
-import { APIReaction, APIUser, APIMessage } from "discord-api-types/v10";
-const {
-  MessageEmbed,
-  Message,
-  MessageReaction,
-  Channel,
-} = require("discord.js");
+import { AnyChannel, Message, MessageReaction, TextChannel } from "discord.js";
 
-const processEmbed = (message: typeof Message) => {
+const processEmbed = (message: Message) => {
   console.log("Processing embed...");
   const embed = {
     author: {
@@ -30,19 +24,18 @@ const processEmbed = (message: typeof Message) => {
   return embed;
 };
 
-const manageStarboard = async (reaction: typeof MessageReaction) => {
+const manageStarboard = async (reaction: MessageReaction) => {
   console.log("Managing starboard...");
-  const message = reaction.message;
+  const message = reaction.message as Message;
   const client = message.client;
   const starboard = client.channels.cache.find(
-    (channel: typeof Channel) =>
-      channel.name.toLowerCase() === "starboard" &&
-      channel.type === "GUILD_TEXT"
+    (channel: AnyChannel) =>
+      (channel as TextChannel).name.toLowerCase() === "starboard" &&
+      (channel as TextChannel).type === "GUILD_TEXT"
   );
-
-  if (starboard) {
-    const isOnStarboard = starboard.messages.cache.find((msg: typeof Message) =>
-      msg.embeds.length === 1
+  if (starboard && starboard.isText()) {
+    const isOnStarboard = starboard.messages.cache.find((msg: Message) =>
+      msg.embeds.length === 1 && msg.embeds[0].footer
         ? msg.embeds[0].footer.text.startsWith(reaction.message.id)
           ? true
           : false
@@ -50,25 +43,26 @@ const manageStarboard = async (reaction: typeof MessageReaction) => {
     );
 
     if (isOnStarboard) return;
-    let embed = processEmbed(message);
+    const embed = processEmbed(message);
+
     console.log("Posting new message to starboard...");
     await starboard
       .send({
         embeds: [embed],
       })
-      .then(console.log("Posted message to starboard!"))
       .catch((err: any) =>
         console.error(
           `Something went wrong while posting a message to a board: ${err}`
         )
       );
+    console.log("Posted message to starboard!");
   } else throw new Error("Starboard not found!");
 };
 
 module.exports = {
   name: "messageReactionAdd",
   once: false,
-  async execute(reaction: typeof MessageReaction, user: APIUser) {
+  async execute(reaction: MessageReaction): Promise<void> {
     console.log("There was a reaction...");
 
     if (reaction.emoji.name === "⭐") {
@@ -76,17 +70,17 @@ module.exports = {
 
       console.log("Fetching...");
       await reaction
-        .fetch(false)
-        .then(console.log("Fetched reaction!"))
+        .fetch()
         .catch((err: any) =>
           console.error(`Something went wrong when fetching a reaction: ${err}`)
         );
+
       await reaction.message
         .fetch(false)
-        .then(console.log("Fetched message!"))
         .catch((err: any) =>
           console.error(`Something went wrong when fetching a message: ${err}`)
         );
+      console.log("Fetched!");
 
       try {
         manageStarboard(reaction);

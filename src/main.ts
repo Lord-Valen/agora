@@ -1,6 +1,6 @@
-const fs = require("fs");
-const { token } = require("./config.json");
-const { Client, Intents, Channel } = require("discord.js");
+import { AnyChannel, Client, Intents, TextChannel } from "discord.js";
+import * as fs from "fs";
+import * as config from "./config.json";
 
 // Start client
 const client = new Client({
@@ -16,46 +16,65 @@ const client = new Client({
 client.on("ready", async () => {
   // Make sure starboards are cached
   const starboard = client.channels.cache.find(
-    (channel: typeof Channel) =>
-      channel.name.toLowerCase() === "starboard" &&
-      channel.type === "GUILD_TEXT"
+    (channel: AnyChannel) =>
+      (channel as TextChannel).name.toLowerCase() === "starboard" &&
+      (channel as TextChannel).type === "GUILD_TEXT"
   );
 
-  starboard.messages
-    .fetch()
-    .then(() =>
-      console.log(
-        "Fetched starboard messages from: *" +
-          starboard.guild.name +
-          " #" +
-          starboard.name
-      )
-    )
-    .catch((err: any) =>
-      console.error(`Something went wrong while fetching a starboard: ${err}`)
-    );
+  try {
+    console.log(starboard);
+    if (!starboard)
+      throw new Error(
+        "Could not fetch board: ${starboard.name}! starboard not found!"
+      );
+    if (starboard.isText()) {
+      starboard.messages
+        .fetch()
+        .then(() =>
+          console.log(
+            `Fetched starboard messages from: *${
+              (starboard as TextChannel).guild.name
+            } #${(starboard as TextChannel).name}`
+          )
+        )
+        .catch((err: any) =>
+          console.error(
+            `Something went wrong while fetching a starboard: ${err}`
+          )
+        );
+    } else throw new Error(`${starboard.name} is not a text channel!`);
+  } catch (err: any) {
+    console.error(`Something went wrong while fetching a board: ${err}`);
+    return;
+  }
 
   console.log("All set!");
 });
 
 client
-  .login(token)
+  .login(config.token)
   .catch((err: any) =>
     console.error(`Something went wrong while logging in: ${err}`)
   );
 
 // Event Handler
-fs.readdir(__dirname + "/events", (err: string, files: string[]) => {
+fs.readdir(__dirname + "/events", (err: any, files: string[]) => {
   if (err) return console.error(err);
   files.forEach((file: string) => {
     if (file.endsWith(".js") == false) return;
-    const event = require(`./events/${file}`);
+
     console.log(`Requiring ${file}`);
-    if (event.once) {
-      client.once(event.name, (...args: any[]) => event.execute(...args));
+    const eventHandler = require(`./events/${file}`);
+
+    if (eventHandler.once) {
+      client.once(eventHandler.name, (...args: any[]) =>
+        eventHandler.execute(...args)
+      );
     } else {
-      console.log(`Listening for ${event.name}`);
-      client.on(event.name, (...args: any[]) => event.execute(...args));
+      console.log(`Listening for ${eventHandler.name}`);
+      client.on(eventHandler.name, (...args: any[]) =>
+        eventHandler.execute(...args)
+      );
     }
   });
 });

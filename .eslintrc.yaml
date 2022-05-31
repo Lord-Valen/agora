@@ -1,0 +1,102 @@
+---
+extends: eslint:recommended
+env:
+  node: true
+  es6: true
+parserOptions:
+  ecmaVersion: 2021
+rules:
+  array-bracket-newline:
+    - error
+    - consistent
+  arrow-body-style:
+    - always
+  arrow-parens: error
+  arrow-spacing:
+    - error
+    - before: true
+      after: true
+  block-spacing: error
+  brace-style:
+    - error
+    - 1tbs
+    - allowSingleLine: true
+  comma-dangle:
+    - error
+    - always-multiline
+  comma-spacing: error
+  comma-style: error
+  curly:
+    - error
+    - multi-line
+    - consistent
+  dot-location:
+    - error
+    - property
+  handle-callback-err: "off"
+  key-spacing: error
+  keyword-spacing: error
+  lines-between-class-members: error
+  max-nested-callbacks:
+    - error
+    - max: 4
+  max-statements-per-line:
+    - error
+    - max: 2
+  multiline-ternary: error
+  new-parens: error
+  newline-per-chained-call: error
+  no-console: "off"
+  no-duplicate-imports: error
+  no-empty-function: error
+  no-extra-parens: error
+  no-floating-decimal: error
+  no-inline-comments: error
+  no-lonely-if: error
+  no-multi-spaces: error
+  no-multiple-empty-lines:
+    - error
+    - maxEOF: 0
+      maxBOF: 0
+  no-shadow:
+    - error
+    - allow:
+        - err
+        - resolve
+        - reject
+  no-tabs: error
+  no-trailing-spaces: error
+  no-var: error
+  no-whitespace-before-property: error
+  object-curly-spacing:
+    - error
+    - always
+  prefer-const: error
+  padding-line-between-statements:
+    - error
+    - blankline: always
+      prev: "*"
+      next: "return"
+    - blankline: always
+      prev: "multiline-block-like"
+      next: "multiline-block-like"
+    - blankline: always
+      prev: "const"
+      next: "block-like"
+    - blankline: always
+      prev:
+        - "const"
+        - "let"
+      next: "*"
+  quotes: error
+  rest-spread-spacing: error
+  semi: error
+  sort-imports: error
+  space-before-blocks: error
+  space-before-function-paren: error
+  space-in-parens: error
+  space-infix-ops: error
+  space-unary-ops: error
+  spaced-comment: error
+  wrap-regex: error
+  yoda: error
