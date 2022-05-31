@@ -12,11 +12,37 @@ const client = new Client({
   partials: ["MESSAGE", "REACTION"],
 });
 
-// Login && bootstrap
+// Login
 client.on("ready", async () => {
+  // Make sure starboards are cached
+  const starboard = client.channels.cache.find(
+    (channel: typeof Channel) =>
+      channel.name.toLowerCase() === "starboard" &&
+      channel.type === "GUILD_TEXT"
+  );
+
+  starboard.messages
+    .fetch()
+    .then(() =>
+      console.log(
+        "Fetched starboard messages from: *" +
+          starboard.guild.name +
+          " #" +
+          starboard.name
+      )
+    )
+    .catch((err: any) =>
+      console.error(`Something went wrong while fetching a starboard: ${err}`)
+    );
+
   console.log("All set!");
 });
-client.login(token);
+
+client
+  .login(token)
+  .catch((err: any) =>
+    console.error(`Something went wrong while logging in: ${err}`)
+  );
 
 // Event Handler
 fs.readdir(__dirname + "/events", (err: string, files: string[]) => {
