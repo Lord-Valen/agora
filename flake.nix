@@ -9,9 +9,5 @@
   outputs = { self, nixpkgs, fu }:
     fu.lib.eachDefaultSystem (system:
       let pkgs = nixpkgs.legacyPackages.${system};
-      in {
-        devShell = pkgs.mkShell {
-          packages = with pkgs; [ nodejs nodePackages.npm nixfmt ];
-        };
-      });
+      in { devShell = import ./shell.nix { inherit pkgs; }; });
 }
