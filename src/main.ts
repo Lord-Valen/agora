@@ -1,6 +1,9 @@
 import { AnyChannel, Client, Intents, TextChannel } from "discord.js";
 import * as fs from "fs";
-import * as config from "./config.json";
+import dotenv from "dotenv"
+
+dotenv.config();
+console.log(process.env.TOKEN)
 
 // Start client
 const client = new Client({
@@ -32,8 +35,7 @@ client.on("ready", async () => {
         .fetch()
         .then(() =>
           console.log(
-            `Fetched starboard messages from: *${
-              (starboard as TextChannel).guild.name
+            `Fetched starboard messages from: *${(starboard as TextChannel).guild.name
             } #${(starboard as TextChannel).name}`
           )
         )
@@ -52,7 +54,7 @@ client.on("ready", async () => {
 });
 
 client
-  .login(config.token)
+  .login(process.env.TOKEN)
   .catch((err: any) =>
     console.error(`Something went wrong while logging in: ${err}`)
   );
