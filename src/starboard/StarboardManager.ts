@@ -1,71 +1,11 @@
-import { AnyChannel, Channel, Message, MessageReaction, TextChannel } from "discord.js";
+import { Channel, Emoji, MessageReaction, TextChannel } from "discord.js";
 import MyClient from "../client/Client";
+import StarboardRules from "../types/StarboardRules";
 import Starboard from "./Starboard";
-
-const processEmbed = (message: Message) => {
-    console.log("Processing embed...");
-    const embed = {
-        author: {
-            name: message.author.username,
-            icon_url: message.author.displayAvatarURL(),
-        },
-        description: `[See this message](${message.url})`,
-        fields: [
-            {
-                name: `${message.author.username} said:`,
-                value: message.content,
-            },
-        ],
-        timestamp: new Date(message.createdTimestamp),
-        footer: {
-            text: message.id,
-        },
-    };
-
-    console.log(`Got the embed!`);
-
-    return embed;
-};
-
-const manageStarboard = async (reaction: MessageReaction) => {
-    console.log("Managing starboard...");
-    const message = reaction.message as Message;
-    const client = message.client;
-    const starboard = client.channels.cache.find(
-        (channel: AnyChannel) =>
-            (channel as TextChannel).name.toLowerCase() === "starboard" &&
-            (channel as TextChannel).type === "GUILD_TEXT"
-    );
-
-    if (starboard && starboard.isText()) {
-        const isOnStarboard = starboard.messages.cache.find((msg: Message) =>
-            msg.embeds.length === 1 && msg.embeds[0].footer
-                ? msg.embeds[0].footer.text.startsWith(reaction.message.id)
-                    ? true
-                    : false
-                : false
-        );
-
-        if (isOnStarboard) return;
-        const embed = processEmbed(message);
-
-        console.log("Posting new message to starboard...");
-        await starboard
-            .send({
-                embeds: [embed],
-            })
-            .catch((err: any) =>
-                console.error(
-                    `Something went wrong while posting a message to a board: ${err}`
-                )
-            );
-        console.log("Posted message to starboard!");
-    } else throw new Error("Starboard not found!");
-};
 
 export default class StarboardManager {
     client: MyClient;
-    starboards: Starboard[] | [];
+    starboards: Starboard[];
 
     constructor(client: MyClient) {
         if (!client) throw new Error("StarboardManager requires a client!")
@@ -73,49 +13,72 @@ export default class StarboardManager {
         this.starboards = [];
     }
 
-    addBoard(channel: TextChannel, rules: object) {
-        if (!channel) throw new Error("StarboardManager requires a channel object to add a board!")
-        throw new Error("StarboardManager.addBoard() is unimplemented!")
+    _matchId(id: string): Starboard | undefined {
+        return this.starboards.find((data: Starboard) => data.channelId === id)
     }
 
-    rmBoard(id: string) {
+    _matchEmoji(emoji: Emoji): Starboard | undefined {
+        return this.starboards.find((data: Starboard) => data.rules.emoji === emoji.toString()
+        )
+    }
+
+    _rules(rules?: StarboardRules): StarboardRules {
+        const defaultRules = {
+            emoji: "⭐",
+            threshold: 5,
+        }
+
+        if (!rules) return defaultRules
+        return {
+            emoji: rules.emoji ? rules.emoji : defaultRules.emoji,
+            threshold: rules.threshold ? rules.threshold : defaultRules.threshold,
+        }
+    }
+
+    addBoard(channel: TextChannel, rules?: StarboardRules): void {
+        if (!channel) throw new Error("StarboardManager requires a channel object to add a board!")
+        const starboard = new Starboard(channel.id, channel.guildId, this._rules(rules), this);
+
+        this.starboards.push(starboard);
+    }
+
+    rmBoard(id: string): void {
         if (!id) throw new Error("StarboardManager requires a channel id to remove a board!")
         throw new Error("StarboardManager.rmBoard() is unimplemented!")
     }
 
     // Events
-    channelDelete(channel: Channel) {
-        const matchChannel = this.starboards.find(data => data.channelId === channel.id)
-        if (matchChannel) this.rmBoard(channel.id)
+    channelDelete(channel: Channel): void {
+        if (this._matchId(channel.id)) this.rmBoard(channel.id)
     }
 
-    async messageReactionAdd(reaction: MessageReaction) {
-        if (!reaction) console.error("messageReactionAdd() requires a reaction!")
+    async messageReactionAdd(reaction: MessageReaction): Promise<void> {
+        if (!reaction) throw new Error("messageReactionAdd() requires a reaction!")
+        const starboard = this._matchEmoji(reaction.emoji)
+        if (!starboard) throw new Error("Emoji does not match!")
 
-        if (reaction.emoji.name === "⭐") {
-            console.log("The reaction is for starboarding!");
+        console.log("The reaction is for starboarding!");
 
-            console.log("Fetching...");
-            await reaction
-                .fetch()
-                .catch((err: any) =>
-                    console.error(`Something went wrong when fetching a reaction: ${err}`)
-                );
+        console.log("Fetching...");
+        await reaction
+            .fetch()
+            .catch((err: any) =>
+                console.error(`Something went wrong when fetching a reaction: ${err}`)
+            );
 
-            await reaction.message
-                .fetch(false)
-                .catch((err: any) =>
-                    console.error(`Something went wrong when fetching a message: ${err}`)
-                );
-            console.log("Fetched!");
+        await reaction.message
+            .fetch(false)
+            .catch((err: any) =>
+                console.error(`Something went wrong when fetching a message: ${err}`)
+            );
+        console.log("Fetched!");
 
-            try {
-                manageStarboard(reaction);
-            } catch (err: any) {
-                console.error(
-                    `Something went wrong when adding a message to a starboard: ${err}`
-                );
-            }
+        try {
+            starboard.messageReactionAdd(reaction);
+        } catch (err: any) {
+            console.error(
+                `Something went wrong when adding a message to a starboard: ${err}`
+            );
         }
     }
 
