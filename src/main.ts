@@ -26,18 +26,19 @@ fs.readdir(__dirname + "/events", (err: any, files: string[]) => {
   if (err) return console.error(err);
   files.forEach(async (file: string) => {
     if (file.endsWith(".js") == false) return;
+    if (file == "Event.js") return;
 
     console.log(`Requiring ${file}`);
     const eventHandler = await import(`./events/${file}`);
 
-    if (eventHandler.once) {
-      client.once(eventHandler.name, (...args: any[]) =>
-        eventHandler.execute(...args)
+    if (eventHandler.default.once) {
+      client.once(eventHandler.default.name, (...args: any[]) =>
+        eventHandler.default.execute(...args)
       );
     } else {
-      console.log(`Listening for ${eventHandler.name}`);
-      client.on(eventHandler.name, (...args: any[]) =>
-        eventHandler.execute(...args)
+      console.log(`Listening for ${eventHandler.default.name}`);
+      client.on(eventHandler.default.name, (...args: any[]) =>
+        eventHandler.default.execute(...args)
       );
     }
   });

@@ -1,10 +1,13 @@
 import { AnyChannel, Client, TextChannel } from "discord.js";
+import Event from "./Event";
 
-module.exports = {
-    name: "ready",
-    once: false,
+class Ready extends Event {
+    constructor() {
+        super("ready", false);
+    }
+
     async execute(client: Client) {
-        // Make sure starboards are cached
+        // Ensure starboards are cached
         const starboard = client.channels.cache.find(
             (channel: AnyChannel) =>
                 (channel as TextChannel).name.toLowerCase() === "starboard" &&
@@ -12,7 +15,6 @@ module.exports = {
         );
 
         try {
-            console.log(starboard);
             if (!starboard)
                 throw new Error(
                     "Could not fetch board: ${starboard.name}! starboard not found!"
@@ -40,3 +42,5 @@ module.exports = {
         console.log("All set!");
     }
 }
+
+export default new Ready()

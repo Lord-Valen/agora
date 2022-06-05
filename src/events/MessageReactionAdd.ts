@@ -1,4 +1,5 @@
 import { AnyChannel, Message, MessageReaction, TextChannel } from "discord.js";
+import Event from "./Event";
 
 const processEmbed = (message: Message) => {
   console.log("Processing embed...");
@@ -19,6 +20,7 @@ const processEmbed = (message: Message) => {
       text: message.id,
     },
   };
+
   console.log(`Got the embed!`);
 
   return embed;
@@ -59,9 +61,10 @@ const manageStarboard = async (reaction: MessageReaction) => {
   } else throw new Error("Starboard not found!");
 };
 
-module.exports = {
-  name: "messageReactionAdd",
-  once: false,
+class MessageReactionAdd extends Event {
+  constructor() {
+    super("messageReasctionAdd", false)
+  }
   async execute(reaction: MessageReaction): Promise<void> {
     console.log("There was a reaction...");
 
@@ -90,5 +93,7 @@ module.exports = {
         );
       }
     }
-  },
-};
+  }
+}
+
+export default new MessageReactionAdd()
