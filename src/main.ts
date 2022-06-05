@@ -1,11 +1,12 @@
-import { Client, Intents } from "discord.js";
+import { Intents } from "discord.js";
 import * as fs from "fs";
 import dotenv from "dotenv"
+import MyClient from "./client/Client";
 
 dotenv.config();
 
 // Start client
-const client = new Client({
+export const client = new MyClient({
   intents: [
     Intents.FLAGS.GUILDS,
     Intents.FLAGS.GUILD_MESSAGES,

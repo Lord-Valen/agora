@@ -1,4 +1,5 @@
-import { AnyChannel, Client, TextChannel } from "discord.js";
+import { AnyChannel, TextChannel } from "discord.js";
+import MyClient from "../client/Client";
 import Event from "./Event";
 
 class Ready extends Event {
@@ -6,7 +7,7 @@ class Ready extends Event {
         super("ready", false);
     }
 
-    async execute(client: Client) {
+    async execute(client: MyClient) {
         // Ensure starboards are cached
         const starboard = client.channels.cache.find(
             (channel: AnyChannel) =>
