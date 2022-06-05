@@ -3,7 +3,6 @@ import * as fs from "fs";
 import dotenv from "dotenv"
 
 dotenv.config();
-console.log(process.env.TOKEN)
 
 // Start client
 const client = new Client({
