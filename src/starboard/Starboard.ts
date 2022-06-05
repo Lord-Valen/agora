@@ -73,6 +73,6 @@ export default class Starboard {
     }
 
     async messageReactionRemove(reaction: MessageReaction) {
-        throw new Error("messageReactionRemove() is unimplemented!")
+        throw new Error("messageReactionRemove() is not yet implemented!")
     }
 }

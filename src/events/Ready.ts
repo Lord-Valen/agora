@@ -1,4 +1,4 @@
-import { AnyChannel, TextChannel } from "discord.js";
+import { AnyChannel } from "discord.js";
 import MyClient from "../client/Client";
 import Event from "./Event";
 
