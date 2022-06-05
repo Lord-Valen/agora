@@ -24,11 +24,11 @@ client
 // Event Handler
 fs.readdir(__dirname + "/events", (err: any, files: string[]) => {
   if (err) return console.error(err);
-  files.forEach((file: string) => {
+  files.forEach(async (file: string) => {
     if (file.endsWith(".js") == false) return;
 
     console.log(`Requiring ${file}`);
-    const eventHandler = require(`./events/${file}`);
+    const eventHandler = await import(`./events/${file}`);
 
     if (eventHandler.once) {
       client.once(eventHandler.name, (...args: any[]) =>
