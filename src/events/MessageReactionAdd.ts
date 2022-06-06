@@ -8,8 +8,12 @@ class MessageReactionAdd extends Event {
   }
 
   async execute(reaction: MessageReaction): Promise<void> {
-    console.log("There was a reaction!");
-    client.starboards.messageReactionAdd(reaction);
+    console.log("A reaction was added!");
+    try {
+      client.starboards.manageReaction(reaction);
+    } catch (err: any) {
+      console.error(`Something went wrong while managing a reaction: ${err}`);
+    }
   }
 }
 

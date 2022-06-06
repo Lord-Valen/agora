@@ -1,5 +1,6 @@
-import { Channel, Emoji, MessageReaction, TextChannel } from "discord.js";
+import { Channel, Emoji, Message, MessageReaction, TextChannel } from "discord.js";
 import MyClient from "../client/Client";
+import StarboardOptions from "../types/StarboardOptions";
 import StarboardRules from "../types/StarboardRules";
 import Starboard from "./Starboard";
 
@@ -14,7 +15,7 @@ export default class StarboardManager {
     }
 
     _matchId(id: string): Starboard | undefined {
-        return this.starboards.find((data: Starboard) => data.channelId === id)
+        return this.starboards.find((data: Starboard) => data.id === id)
     }
 
     _matchEmoji(emoji: Emoji): Starboard | undefined {
@@ -22,7 +23,7 @@ export default class StarboardManager {
         )
     }
 
-    _rules(rules?: StarboardRules): StarboardRules {
+    _optionsToRules(rules?: StarboardOptions): StarboardRules {
         const defaultRules = {
             emoji: "⭐",
             threshold: 5,
@@ -30,14 +31,36 @@ export default class StarboardManager {
 
         if (!rules) return defaultRules
         return {
-            emoji: rules.emoji ? rules.emoji : defaultRules.emoji,
-            threshold: rules.threshold ? rules.threshold : defaultRules.threshold,
+            emoji: rules.emoji
+                ? rules.emoji
+                : defaultRules.emoji,
+            threshold: rules.threshold
+                ? rules.threshold
+                : defaultRules.threshold,
         }
     }
 
-    addBoard(channel: TextChannel, rules?: StarboardRules): void {
+    async _fetchReaction(reaction: MessageReaction): Promise<void> {
+        await reaction
+            .fetch()
+            .catch((err: any) =>
+                console.error(`Something went wrong when fetching a reaction: ${err}`)
+            );
+    }
+
+    async _fetchMessage(message: Message): Promise<void> {
+        await message
+            .fetch(false)
+            .catch((err: any) =>
+                console.error(`Something went wrong when fetching a message: ${err}`)
+            );
+    }
+
+    async addBoard(channel: TextChannel, options?: StarboardOptions): Promise<void> {
         if (!channel) throw new Error("StarboardManager requires a channel object to add a board!")
-        const starboard = new Starboard(channel.id, channel.guildId, this._rules(rules), this);
+        await channel.fetch();
+        await channel.messages.fetch();
+        const starboard = new Starboard(channel, this._optionsToRules(options), this);
 
         this.starboards.push(starboard);
     }
@@ -52,38 +75,24 @@ export default class StarboardManager {
         if (this._matchId(channel.id)) this.rmBoard(channel.id)
     }
 
-    async messageReactionAdd(reaction: MessageReaction): Promise<void> {
-        if (!reaction) throw new Error("messageReactionAdd() requires a reaction!")
+    async manageReaction(reaction: MessageReaction): Promise<void> {
+        if (!reaction) throw new Error("manageReaction() requires a reaction!")
         const starboard = this._matchEmoji(reaction.emoji)
-        if (!starboard) throw new Error("Emoji does not match!")
+        if (!starboard) return;
 
         console.log("The reaction is for starboarding!");
 
         console.log("Fetching...");
-        await reaction
-            .fetch()
-            .catch((err: any) =>
-                console.error(`Something went wrong when fetching a reaction: ${err}`)
-            );
-
-        await reaction.message
-            .fetch(false)
-            .catch((err: any) =>
-                console.error(`Something went wrong when fetching a message: ${err}`)
-            );
+        await this._fetchReaction(reaction);
+        await this._fetchMessage(reaction.message as Message);
         console.log("Fetched!");
 
         try {
-            starboard.messageReactionAdd(reaction);
+            starboard.manageStarboard(reaction);
         } catch (err: any) {
             console.error(
-                `Something went wrong when adding a message to a starboard: ${err}`
+                `Something went wrong when managing a starboard: ${err}`
             );
         }
-    }
-
-    messageReactionRemove(reaction: MessageReaction) {
-        if (!reaction) console.error("messageReactionRemove() requires a reaction!")
-        throw new Error("messageReactionRemove() is unimplemented!")
     }
 }

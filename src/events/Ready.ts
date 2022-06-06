@@ -9,10 +9,8 @@ class Ready extends Event {
 
     async execute(client: MyClient) {
         // Test channel
-        client.channels.fetch("980686501727830036").then((channel: AnyChannel | null) => {
-            if (channel && channel.type === "GUILD_TEXT") client.starboards.addBoard(channel);
-            console.log(channel)
-            console.log(client.starboards.starboards)
+        client.channels.fetch("983161541375434862").then((channel: AnyChannel | null) => {
+            if (channel && channel.type === "GUILD_TEXT") client.starboards.addBoard(channel, { threshold: 2 });
         })
 
         console.log("All set!");

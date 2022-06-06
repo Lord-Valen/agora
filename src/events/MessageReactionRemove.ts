@@ -1,3 +1,5 @@
+import { MessageReaction } from "discord.js";
+import { client } from "../main";
 import Event from "./Event";
 
 class MessageReactionRemove extends Event {
@@ -5,8 +7,13 @@ class MessageReactionRemove extends Event {
         super("messageReactionRemove", false);
     }
 
-    async execute() {
-        throw new Error("MessageReactionRemove not yet implemented!")
+    async execute(reaction: MessageReaction) {
+        console.log("A reaction was removed!");
+        try {
+            client.starboards.manageReaction(reaction);
+        } catch (err: any) {
+            console.error(`Something went wrong while managing a reaction: ${err}`);
+        }
     }
 }
 
